@@ -1,8 +1,36 @@
 <template>
-  <button @click="connect">Connect</button>
-  <label for="console">
+  <div>
+    <button @click="connect">Connect</button>
+  </div>
+  <div>
+    <table>
+      <tr>
+        <th>Raw value</th>
+        <th>Classical algorithm</th>
+      </tr>
+      <tr>
+        <td>{{current.raw}}</td>
+        <td>{{current.standard_algorithm}}</td>
+      </tr>
+    </table>
+  </div>
+  <div>
+    <table>
+      <tr>
+        <th>Press</th>
+        <th>Release</th>
+        <th>Idle</th>
+      </tr>
+      <tr>
+        <td>{{current.confidence?.push}}%</td>
+        <td>{{current.confidence?.release}}%</td>
+        <td>{{current.confidence?.idle}}%</td>
+      </tr>
+    </table>
+  </div>
+  <!-- <label for="console">
     <textarea name="console" id="console" v-model="log" cols="30" rows="10"></textarea>
-  </label>
+  </label> -->
 </template>
 
 <script lang="ts">
@@ -26,6 +54,8 @@ export default class App extends Vue {
   log = '';
 
   buffer = '';
+
+  current: object = {};
 
   static mounted() {
     if ('serial' in navigator) {
@@ -60,6 +90,8 @@ export default class App extends Vue {
               const position = this.buffer.indexOf('\n');
               if (position !== -1) {
                 const line = this.buffer.substring(0, position).replaceAll('\r', '');
+                this.buffer = this.buffer.substring(position + 1);
+                // console.log(line);
                 const parts = line.split(',');
                 const data = {
                   raw: parts[0],
@@ -70,8 +102,9 @@ export default class App extends Vue {
                     idle: parts[4],
                   },
                 };
-                console.log(data);
-                this.log += line;
+                this.current = data;
+                // console.log(data);
+                // this.log += line;
               }
             }
           } catch (error) {
