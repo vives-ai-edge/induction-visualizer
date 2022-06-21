@@ -7,10 +7,16 @@
       <tr>
         <th>Raw value</th>
         <th>Classical algorithm</th>
+        <th>AI</th>
       </tr>
       <tr>
         <td>{{current.raw}}</td>
-        <td>{{current.standard_algorithm}}</td>
+        <td :class="current.standard_algorithm === '1' ? 'highlight' : ''">
+          {{current.standard_algorithm}}
+        </td>
+        <td :class="currentState === '1' ? 'highlight' : ''">
+          {{currentState}}
+        </td>
       </tr>
     </table>
   </div>
@@ -22,8 +28,12 @@
         <th>Idle</th>
       </tr>
       <tr>
-        <td>{{current.confidence?.push}}%</td>
-        <td>{{current.confidence?.release}}%</td>
+        <td :class="current.confidence?.push > 90 ? 'highlight' : ''">
+          {{current.confidence?.push}}%
+        </td>
+        <td :class="current.confidence?.release > 90 ? 'highlight' : ''">
+          {{current.confidence?.release}}%
+        </td>
         <td>{{current.confidence?.idle}}%</td>
       </tr>
     </table>
@@ -31,6 +41,8 @@
   <!-- <label for="console">
     <textarea name="console" id="console" v-model="log" cols="30" rows="10"></textarea>
   </label> -->
+  <!-- <Gauge v-model:value="pushConfidence"></Gauge>
+  <Chart></Chart> -->
 </template>
 
 <script lang="ts">
@@ -40,10 +52,14 @@
 
 import { Options, Vue } from 'vue-class-component';
 import HelloWorld from './components/HelloWorld.vue';
+import Chart from './components/Chart.vue';
+import Gauge from './components/Gauge.vue';
 
 @Options({
   components: {
     HelloWorld,
+    Chart,
+    Gauge,
   },
 })
 export default class App extends Vue {
@@ -55,7 +71,19 @@ export default class App extends Vue {
 
   buffer = '';
 
-  current: object = {};
+  current: object = {
+    raw: '-',
+    standard_algorithm: '-',
+    confidence: {
+      push: '-',
+      release: '-',
+      idle: '-',
+    },
+  };
+
+  currentState = '-';
+
+  pushConfidence = 0;
 
   static mounted() {
     if ('serial' in navigator) {
@@ -63,6 +91,8 @@ export default class App extends Vue {
       // The Web Serial API is supported.
     }
   }
+
+  pushHighlight = '';
 
   async connect() {
     console.log(`connect button pressed ${this.tmp}`);
@@ -103,6 +133,16 @@ export default class App extends Vue {
                   },
                 };
                 this.current = data;
+                if (parseInt(data.confidence?.push, 10) > 1) {
+                  this.currentState = '1';
+                }
+                if (parseInt(data.confidence?.release, 10) > 1) {
+                  this.currentState = '0';
+                }
+                // this.pushConfidence = parseInt(data.confidence?.push, 10);
+                // if (this.pushConfidence > 90) {
+                //   this.pushHighlight = 'highlight';
+                // }
                 // console.log(data);
                 // this.log += line;
               }
@@ -123,12 +163,14 @@ export default class App extends Vue {
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+table {
+  width: 100%;
+}
+tr, td {
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+}
+
+.highlight {
+  background-color: yellow;
 }
 </style>
