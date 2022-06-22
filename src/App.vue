@@ -168,6 +168,11 @@ table {
 }
 tr, td {
   text-align: center;
+  transition: background-color 0.5s ease-out;
+}
+
+tr.highlight, td.highlight {
+  transition: background-color 0s ease-out;
 }
 
 .highlight {
